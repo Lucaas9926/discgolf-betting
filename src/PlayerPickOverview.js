@@ -1,5 +1,5 @@
 
-// Översiktssida – visar vilka spelare varje användare valt per event (utan poäng), sorterat med senaste event överst
+// Översiktssida – visar alla användares val per event, sorterade med vinnaren först
 
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -11,32 +11,17 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function PlayerPickOverview() {
   const [picks, setPicks] = useState([]);
   const [players, setPlayers] = useState({});
-  const [events, setEvents] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: picksData } = await supabase
-        .from("Picks")
-        .select("user_name, event_id, player_id")
-        .order("event_id");
-
-      const { data: playersData } = await supabase
-        .from("Spelare")
-        .select("id, name");
-
-      const { data: eventsData } = await supabase
-        .from("Events")
-        .select("id, name");
+      const { data: picksData } = await supabase.from("Picks").select("user_name, event_id, player_id, role").order("event_id");
+      const { data: playersData } = await supabase.from("Spelare").select("id, name");
 
       const playerMap = {};
-      playersData.forEach((p) => (playerMap[p.id] = p.name));
-
-      const eventMap = {};
-      eventsData.forEach((e) => (eventMap[e.id] = e.name));
+      playersData?.forEach((p) => (playerMap[p.id] = p.name));
 
       setPlayers(playerMap);
-      setEvents(eventMap);
       setPicks(picksData);
       setLoading(false);
     };
@@ -44,33 +29,39 @@ export default function PlayerPickOverview() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="p-4">Laddar översikt...</div>;
+  if (loading) return <div className="p-4">Laddar val...</div>;
 
-  const groupedByEventAndUser = {};
+  const groupedByUserAndEvent = {};
   picks.forEach((pick) => {
-    const key = `event${pick.event_id}-${pick.user_name}`;
-    if (!groupedByEventAndUser[key]) groupedByEventAndUser[key] = [];
-    groupedByEventAndUser[key].push(players[pick.player_id]);
+    const key = `${pick.user_name}-event${pick.event_id}`;
+    if (!groupedByUserAndEvent[key]) groupedByUserAndEvent[key] = [];
+    groupedByUserAndEvent[key].push({ ...pick, name: players[pick.player_id] });
   });
 
-  const sortedKeys = Object.keys(groupedByEventAndUser).sort((a, b) => {
-    const eventA = parseInt(a.match(/event(\d+)/)[1]);
-    const eventB = parseInt(b.match(/event(\d+)/)[1]);
-    return eventB - eventA; // Störst (senaste) först
+  const sortedKeys = Object.keys(groupedByUserAndEvent).sort((a, b) => {
+    const aEvent = parseInt(a.split("-event")[1]);
+    const bEvent = parseInt(b.split("-event")[1]);
+    return bEvent - aEvent;
   });
 
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Översikt: Spelarval per användare och event</h2>
       {sortedKeys.map((key) => {
-        const [_, user] = key.split("-");
-        const eventId = parseInt(key.match(/event(\d+)/)[1]);
+        const [user, event] = key.split("-event");
+        const picks = groupedByUserAndEvent[key];
+        const winner = picks.find(p => p.role === "winner");
+        const top5 = picks.filter(p => p.role === "top5");
+
         return (
           <div key={key} className="mb-4 p-3 border rounded-lg shadow">
-            <strong>{events[eventId] || `Event ${eventId}`}</strong> – {user}
-            <ul className="list-disc list-inside mt-1">
-              {groupedByEventAndUser[key].map((name, index) => (
-                <li key={index}>{name}</li>
+            <strong>{user}</strong> – Event {event}
+            <ul className="list-disc list-inside mt-2">
+              {winner && (
+                <li key={winner.player_id}>⭐ {winner.name} (Vinnare)</li>
+              )}
+              {top5.map((pick) => (
+                <li key={pick.player_id}>{pick.name}</li>
               ))}
             </ul>
           </div>

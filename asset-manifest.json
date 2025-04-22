@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/discgolf-betting/static/css/main.e6c13ad2.css",
-    "main.js": "/discgolf-betting/static/js/main.9334b78e.js",
+    "main.js": "/discgolf-betting/static/js/main.efb7e899.js",
     "static/js/952.21c234c4.chunk.js": "/discgolf-betting/static/js/952.21c234c4.chunk.js",
     "static/js/488.571d9948.chunk.js": "/discgolf-betting/static/js/488.571d9948.chunk.js",
     "index.html": "/discgolf-betting/index.html",
     "main.e6c13ad2.css.map": "/discgolf-betting/static/css/main.e6c13ad2.css.map",
-    "main.9334b78e.js.map": "/discgolf-betting/static/js/main.9334b78e.js.map",
+    "main.efb7e899.js.map": "/discgolf-betting/static/js/main.efb7e899.js.map",
     "952.21c234c4.chunk.js.map": "/discgolf-betting/static/js/952.21c234c4.chunk.js.map",
     "488.571d9948.chunk.js.map": "/discgolf-betting/static/js/488.571d9948.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.9334b78e.js"
+    "static/js/main.efb7e899.js"
   ]
 }

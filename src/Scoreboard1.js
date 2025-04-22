@@ -1,3 +1,5 @@
+
+// Scoreboard.js – visar poäng per event + totalställning
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -31,13 +33,12 @@ export default function Scoreboard() {
         const pos = result?.position;
 
         if (!scoreMap[user]) scoreMap[user] = {};
-        if (!scoreMap[user][event]) scoreMap[user][event] = { points: 0, trophies: 0 }; // Tracking both points and trophies
+        if (!scoreMap[user][event]) scoreMap[user][event] = 0;
 
         let point = 0;
         if (role === "winner") {
           if (pos === 1) {
             point = 5;
-            scoreMap[user][event].trophies += 1; // Award trophy for correct winner
           } else if (pos && pos <= 5) {
             point = 1;
           }
@@ -48,7 +49,7 @@ export default function Scoreboard() {
         if (point > 0) {
           if (pick.outside15) point *= 2;
           if (isMajor) point *= 2;
-          scoreMap[user][event].points += point;
+          scoreMap[user][event] += point;
         }
       });
 
@@ -67,8 +68,7 @@ export default function Scoreboard() {
 
   const totalPoints = users.map((user) => ({
     user,
-    total: eventIds.reduce((acc, eid) => acc + (scores[user]?.[eid]?.points || 0), 0),
-    trophies: eventIds.reduce((acc, eid) => acc + (scores[user]?.[eid]?.trophies || 0), 0), // Total trophies
+    total: eventIds.reduce((acc, eid) => acc + (scores[user]?.[eid] || 0), 0),
   })).sort((a, b) => b.total - a.total);
 
   return (
@@ -77,7 +77,7 @@ export default function Scoreboard() {
       <ul className="mb-6">
         {totalPoints.map((u, i) => (
           <li key={u.user} className="mb-1">
-            {i + 1}. <strong>{u.user}</strong> – {u.total} poäng {u.trophies > 0 && ' ' + '🏆'.repeat(u.trophies)}
+            {i + 1}. <strong>{u.user}</strong> – {u.total} poäng
           </li>
         ))}
       </ul>
@@ -91,7 +91,7 @@ export default function Scoreboard() {
               <ul className="pl-4 list-disc">
                 {users.map((u) => (
                   <li key={u}>
-                    {u}: {scores[u]?.[eid]?.points || 0} poäng {scores[u]?.[eid]?.trophies > 0 && ' ' + '🏆'.repeat(scores[u]?.[eid]?.trophies)}
+                    {u}: {scores[u]?.[eid] || 0} poäng
                   </li>
                 ))}
               </ul>
@@ -102,4 +102,3 @@ export default function Scoreboard() {
     </div>
   );
 }
-
